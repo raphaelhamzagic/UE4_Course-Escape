@@ -19,7 +19,7 @@ UOpenDoor::UOpenDoor()
 void UOpenDoor::BeginPlay()
 {
 	Super::BeginPlay();
-	TargetYaw = GetOwner()->GetActorRotation().Yaw + 90.f;
+	TargetYaw += GetOwner()->GetActorRotation().Yaw;
 }
 
 
