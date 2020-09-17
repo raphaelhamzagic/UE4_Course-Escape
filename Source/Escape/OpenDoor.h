@@ -28,14 +28,21 @@ public:
 	void TickDoor(float DeltaTime);
 
 private:
+	float DoorClosedYaw;
+	float TargetYaw;
+
 	UPROPERTY(EditAnywhere)
 	float DoorOpenYawOffset = 90.f;
 
-	float DoorClosedYaw;
-	float TargetYaw;
+	UPROPERTY(EditAnywhere)
+	float DoorOpenAndCloseSpeed = 2.f;
 
 	UPROPERTY(EditAnywhere)
 	ATriggerVolume* DoorTrigger;
 
 	APlayerController* PlayerController;
+
+	float DoorLastOpened = 0.f;
+	UPROPERTY(EditAnywhere)
+	float DoorCloseDelay = 2.f;
 };

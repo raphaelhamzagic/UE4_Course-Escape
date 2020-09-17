@@ -34,14 +34,18 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (PlayerController) {		
+	if (PlayerController) {
 		if (DoorTrigger && DoorTrigger->IsOverlappingActor(PlayerController->GetPawn()))
 		{
 			TargetYaw = DoorClosedYaw + DoorOpenYawOffset;
+			DoorLastOpened = GetWorld()->GetTimeSeconds();
 		}
 		else
 		{
-			TargetYaw = DoorClosedYaw;
+			if (GetWorld()->GetTimeSeconds() - DoorLastOpened > DoorCloseDelay)
+			{
+				TargetYaw = DoorClosedYaw;
+			}
 		}
 		TickDoor(DeltaTime);
 	}
@@ -49,11 +53,12 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 
 void UOpenDoor::TickDoor(float DeltaTime)
 {
+	float currentTime = GetWorld()->GetRealTimeSeconds();
 	float Yaw = FMath::FInterpTo(
 		GetOwner()->GetActorRotation().Yaw,
 		TargetYaw,
 		DeltaTime,
-		2
+		DoorOpenAndCloseSpeed
 	);
 	GetOwner()->SetActorRotation(FRotator(0.f, Yaw, 0.f));
 }
