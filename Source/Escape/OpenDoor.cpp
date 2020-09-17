@@ -19,7 +19,13 @@ UOpenDoor::UOpenDoor()
 void UOpenDoor::BeginPlay()
 {
 	Super::BeginPlay();
-	TargetYaw += GetOwner()->GetActorRotation().Yaw;
+	DoorClosedYaw = GetOwner()->GetActorRotation().Yaw;
+
+	if (!DoorTrigger) {
+		UE_LOG(LogTemp, Error, TEXT("%s has the open door component, but no DoorTrigger set."), *GetOwner()->GetName());
+	}
+
+	PlayerController = GetWorld()->GetFirstPlayerController();
 }
 
 
@@ -28,25 +34,26 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	AActor* AOwnerPtr = GetOwner();
-	UE_LOG(LogTemp, Warning, TEXT("Current Yaw: %f"), AOwnerPtr->GetActorRotation().Yaw);
+	if (PlayerController) {		
+		if (DoorTrigger && DoorTrigger->IsOverlappingActor(PlayerController->GetPawn()))
+		{
+			TargetYaw = DoorClosedYaw + DoorOpenYawOffset;
+		}
+		else
+		{
+			TargetYaw = DoorClosedYaw;
+		}
+		TickDoor(DeltaTime);
+	}
+}
 
-	/*
-	float Yaw = FMath::FInterpConstantTo(
-		AOwnerPtr->GetActorRotation().Yaw,
-		TargetYaw,
-		DeltaTime,
-		45
-	);
-	*/
+void UOpenDoor::TickDoor(float DeltaTime)
+{
 	float Yaw = FMath::FInterpTo(
-		AOwnerPtr->GetActorRotation().Yaw,
+		GetOwner()->GetActorRotation().Yaw,
 		TargetYaw,
 		DeltaTime,
 		2
 	);
-	AOwnerPtr->SetActorRotation(FRotator(0.f, Yaw, 0.f));
-
-	UE_LOG(LogTemp, Warning, TEXT("New Yaw: %f"), AOwnerPtr->GetActorRotation().Yaw);
+	GetOwner()->SetActorRotation(FRotator(0.f, Yaw, 0.f));
 }
-
