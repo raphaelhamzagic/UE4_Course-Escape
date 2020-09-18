@@ -45,26 +45,31 @@ void UGrabber::Grab()
 	
 	FHitResult HitResult = GetFirstPhysicsBodyInReach();
 	if (HitResult.GetActor())
-	{
-		FindReachLocation();
-		
-		UPrimitiveComponent* ComponentToGrab = HitResult.GetComponent();
-		PhysicsHandle->GrabComponentAtLocation(ComponentToGrab, EName::NAME_None, EndReachLocation);
+	{		
+		if (PhysicsHandle != nullptr) 
+		{
+			UPrimitiveComponent* ComponentToGrab = HitResult.GetComponent();
+			FindReachLocation();
+			PhysicsHandle->GrabComponentAtLocation(ComponentToGrab, EName::NAME_None, EndReachLocation);
 
-		UE_LOG(
-			LogTemp,
-			Warning,
-			TEXT("%f: Hit actor %s"),
-			GetWorld()->GetRealTimeSeconds(),
-			*HitResult.GetActor()->GetName()
-		);
+			UE_LOG(
+				LogTemp,
+				Warning,
+				TEXT("%f: Hit actor %s"),
+				GetWorld()->GetRealTimeSeconds(),
+				*HitResult.GetActor()->GetName()
+			);
+		}		
 	}	
 }
 
 void UGrabber::Drop()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Grab released"));
-	PhysicsHandle->ReleaseComponent();
+	if (PhysicsHandle != nullptr)
+	{
+		PhysicsHandle->ReleaseComponent();
+	}
 }
 
 // Called every frame
@@ -79,21 +84,18 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 	{
 		TickDebugLine();
 	}
+
 	TickGrabbedComponent();
 }
 
 void UGrabber::TickDebugLine()
 {
-	FVector OutPlayerViewLocation;
-	FRotator OutPlayerViewRotation;
-	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(OutPlayerViewLocation, OutPlayerViewRotation);
-
-	FVector LineTraceEnd = OutPlayerViewLocation + (OutPlayerViewRotation.Vector() * Reach);
+	FindReachLocation();
 
 	DrawDebugLine(
 		GetWorld(),
-		OutPlayerViewLocation,
-		LineTraceEnd,
+		StartReachLocation,
+		EndReachLocation,
 		FColor(0, 255, 0),
 		false,
 		0.f,
@@ -119,7 +121,7 @@ FHitResult UGrabber::GetFirstPhysicsBodyInReach()
 
 void UGrabber::TickGrabbedComponent()
 {
-	if (PhysicsHandle->GrabbedComponent)
+	if (PhysicsHandle != nullptr && PhysicsHandle->GrabbedComponent)
 	{
 		FindReachLocation();
 		PhysicsHandle->SetTargetLocation(EndReachLocation);
