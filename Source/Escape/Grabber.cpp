@@ -22,14 +22,25 @@ void UGrabber::BeginPlay()
 	Super::BeginPlay();
 
 	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
-	if (PhysicsHandle != nullptr)
-	{
-
-	}
-	else
+	if (PhysicsHandle == nullptr)
 	{
 		UE_LOG(LogTemp, Error, TEXT("No physics handle component found on %s"), *GetOwner()->GetName());
 	}
+
+	InputComponent = GetOwner()->InputComponent;
+	if (InputComponent == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("No input component found on %s"), *GetOwner()->GetName());
+	}
+	else
+	{
+		InputComponent->BindAction("Grab", EInputEvent::IE_Pressed, this, &UGrabber::Grab);
+	}
+}
+
+void UGrabber::Grab()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Grab pressed"));
 }
 
 
@@ -43,7 +54,6 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(OutPlayerViewLocation, OutPlayerViewRotation);
 
 	// UE_LOG(LogTemp, Warning, TEXT("Location: %s, Rotation %s"), *out_PlayerViewLocation.ToString(), *out_PlayerViewRotation.ToString());
-	
 
 	FVector LineTraceEnd = OutPlayerViewLocation + (OutPlayerViewRotation.Vector() * Reach);
 
@@ -57,7 +67,6 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 		0,
 		5.0f
 	);
-
 
 	FHitResult OutHitObject;
 
