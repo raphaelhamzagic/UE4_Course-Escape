@@ -21,8 +21,15 @@ void UGrabber::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
-	
+	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
+	if (PhysicsHandle != nullptr)
+	{
+
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("No physics handle component found on %s"), *GetOwner()->GetName());
+	}
 }
 
 
@@ -71,6 +78,5 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 			*OutHitObject.GetActor()->GetName()
 		);
 	}
-
 }
 
