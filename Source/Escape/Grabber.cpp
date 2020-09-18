@@ -31,18 +31,18 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	FVector out_PlayerViewLocation;
-	FRotator out_PlayerViewRotation;
-	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(out_PlayerViewLocation, out_PlayerViewRotation);
+	FVector OutPlayerViewLocation;
+	FRotator OutPlayerViewRotation;
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(OutPlayerViewLocation, OutPlayerViewRotation);
 
 	// UE_LOG(LogTemp, Warning, TEXT("Location: %s, Rotation %s"), *out_PlayerViewLocation.ToString(), *out_PlayerViewRotation.ToString());
 	
 
-	FVector LineTraceEnd = out_PlayerViewLocation + (out_PlayerViewRotation.Vector() * Reach);
+	FVector LineTraceEnd = OutPlayerViewLocation + (OutPlayerViewRotation.Vector() * Reach);
 
 	DrawDebugLine(
 		GetWorld(),
-		out_PlayerViewLocation,
+		OutPlayerViewLocation,
 		LineTraceEnd,
 		FColor(0, 255, 0),
 		false,
@@ -50,5 +50,27 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 		0,
 		5.0f
 	);
+
+
+	FHitResult OutHitObject;
+
+	bool IsHit = GetWorld()->LineTraceSingleByObjectType(
+		OutHitObject,
+		OutPlayerViewLocation,
+		LineTraceEnd,
+		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody)
+	);
+
+	if (IsHit) {
+		
+		UE_LOG(
+			LogTemp, 
+			Warning, 
+			TEXT("%f: Hit actor %s"), 
+			GetWorld()->GetRealTimeSeconds(),
+			*OutHitObject.GetActor()->GetName()
+		);
+	}
+
 }
 
