@@ -49,5 +49,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	float RequiredMassToOpen = 50.f;
 
-	APlayerController* PlayerController = nullptr;
+	UAudioComponent* AudioComponent = nullptr;
+	bool HasOpenDoorAudioPlayed = false;
+	bool HasCloseDoorAudioPlayed = true;
+
+	void FindAudioComponent();
 };

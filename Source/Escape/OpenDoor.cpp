@@ -2,6 +2,7 @@
 
 
 #include "OpenDoor.h"
+#include "Components/AudioComponent.h"
 #include "Components/PrimitiveComponent.h"
 #include "GameFramework/Actor.h"
 
@@ -20,7 +21,17 @@ void UOpenDoor::BeginPlay()
 	Super::BeginPlay();
 	DoorClosedYaw = GetOwner()->GetActorRotation().Yaw;
 	if (!PressurePlate) {
-		UE_LOG(LogTemp, Error, TEXT("%s has the open door component, but no DoorTrigger set."), *GetOwner()->GetName());
+		UE_LOG(LogTemp, Error, TEXT("%s has the open door component, but no PressurePlate set."), *GetOwner()->GetName());
+	}
+	FindAudioComponent();
+}
+
+void UOpenDoor::FindAudioComponent()
+{
+	AudioComponent = GetOwner()->FindComponentByClass<UAudioComponent>();
+	if (AudioComponent == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s has the open door component, but no AudioComponent set."), *GetOwner()->GetName());		
 	}
 }
 
@@ -34,16 +45,34 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 	{
 		DoorTargetYaw = DoorClosedYaw + DoorOpenYawOffset;
 		DoorLastOpenedTime = GetWorld()->GetTimeSeconds();
+		if (AudioComponent != nullptr)
+		{
+			if (!HasOpenDoorAudioPlayed)
+			{
+				AudioComponent->Play();
+				HasOpenDoorAudioPlayed = true;
+			}			
+		}
+		HasCloseDoorAudioPlayed = false;
 	}
 	else
 	{
 		if (GetWorld()->GetTimeSeconds() - DoorLastOpenedTime > DoorCloseDelay)
 		{
 			DoorTargetYaw = DoorClosedYaw;
+			if (AudioComponent != nullptr)
+			{
+				if (!HasCloseDoorAudioPlayed)
+				{
+					AudioComponent->Play();
+					HasCloseDoorAudioPlayed = true;
+				}
+			}
+			HasOpenDoorAudioPlayed = false;
 		}
 	}
-	TickDoor(DeltaTime);
 
+	TickDoor(DeltaTime);
 }
 
 void UOpenDoor::TickDoor(float DeltaTime)
